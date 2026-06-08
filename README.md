@@ -1,14 +1,17 @@
 
 
 ### Description
-Rebase Token with CCIP cross-chain functionality
+Rebase Token with CCIP cross-chain functionality  
+
+### Purpose
+Part of Advanced Foundry course from Cyfrin Updraft and as submodule in [appropriate repository](https://github.com/kuzminklk/cyfrin-updraft)  
 
 ### Technologies
-CCIP, Chainlink Local
+CCIP, Chainlink Local  
 
 
 ### Status
-Finished at 90%, tested locally, don't deploy to testnet
+Finished at 90%, tested locally, don't deploy to testnet  
 
 ### Development Path
 1. Didn't worked. Unknown bug, error with Chainlink Local functionality. Maybe I will rebuild with Hardhat
@@ -23,6 +26,9 @@ Finished at 90%, tested locally, don't deploy to testnet
 ### Set up
 Install foundry dependences:
 ```forge install```
+
+### Usage
+Basic Foundry commands: ```forge build```, ```forge test```  
 
 ### Deployments and interactions
 Don't deploy now
