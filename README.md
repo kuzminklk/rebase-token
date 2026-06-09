@@ -11,14 +11,13 @@ CCIP, Chainlink Local
 
 
 ### Status
-Finished at 90%, tested locally, don't deploy to testnet  
+Finished at 90%, tested locally, didn't deployed to testnet  
 
 ### Development Path
 1. Didn't worked. Unknown bug, error with Chainlink Local functionality. Maybe I will rebuild with Hardhat
 2. Fixed the bug. It was issue of latest chainlink-local versions. Use beta-version of that instead
 
 ### To-dos
-- **Rebuild dependences remappings**
 - Rewatch lessons from 29
 - Deploy to testnet
 
@@ -31,4 +30,4 @@ Install foundry dependences:
 Basic Foundry commands: ```forge build```, ```forge test```  
 
 ### Deployments and interactions
-Don't deploy now
+Didn't deployed for now

@@ -106,7 +106,7 @@ contract TestCrossChain is Test {
 	 */
 	function setUp() public {
 		// Create Forks
-		SEPOLIA_FORK = vm.createFork("sepolia");
+		SEPOLIA_FORK = vm.createFork("ethereum-sepolia");
 		BASE_SEPOLIA_FORK = vm.createFork("base-sepolia");
 
 		// Create ccipLocalSimulatorFork and make persistent across Forks
