@@ -1,7 +1,4 @@
-
-
-
-/* 
+/*
 Layout of Smart-Contract: (in theory and in practice here)
 1. Version
 2. Imports
@@ -14,7 +11,7 @@ Layout of Smart-Contract: (in theory and in practice here)
 9. Funcitons
 */
 
-/* 
+/*
 Layout of functions: (in theory)
 1. Constructor
 2. Recive Function
@@ -24,7 +21,7 @@ Layout of functions: (in theory)
 6. View, Pure
 */
 
-/* 
+/*
 Layout of test sections:
 1. Interest Rate
 2. Balance
@@ -34,37 +31,34 @@ Layout of test sections:
 6. Roles
 */
 
-
-
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.19;
 
-import { console, Test } from "forge-std/Test.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { IAccessControl } from "@openzeppelin/contracts/access/AccessControl.sol";
-import { IERC20 } from "@openzeppelin/contracts@4.8.3/token/ERC20/IERC20.sol";
-import { RegistryModuleOwnerCustom } from "@chainlink/contracts-ccip/contracts/tokenAdminRegistry/RegistryModuleOwnerCustom.sol";
-import { TokenAdminRegistry } from "@chainlink/contracts-ccip/contracts/tokenAdminRegistry/TokenAdminRegistry.sol";
-import { RateLimiter } from "@chainlink/contracts-ccip/contracts/libraries/RateLimiter.sol";
-import { Client } from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
-import { IRouterClient } from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
-import { TokenPool } from "@chainlink/contracts-ccip/contracts/pools/TokenPool.sol";
-import { CCIPLocalSimulatorFork, Register } from "@chainlink/local/src/ccip/CCIPLocalSimulatorFork.sol";
+import {console, Test} from "forge-std/Test.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IAccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {IERC20} from "@openzeppelin/contracts@4.8.3/token/ERC20/IERC20.sol";
+import {
+	RegistryModuleOwnerCustom
+} from "@chainlink/contracts-ccip/contracts/tokenAdminRegistry/RegistryModuleOwnerCustom.sol";
+import {TokenAdminRegistry} from "@chainlink/contracts-ccip/contracts/tokenAdminRegistry/TokenAdminRegistry.sol";
+import {RateLimiter} from "@chainlink/contracts-ccip/contracts/libraries/RateLimiter.sol";
+import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
+import {IRouterClient} from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
+import {TokenPool} from "@chainlink/contracts-ccip/contracts/pools/TokenPool.sol";
+import {CCIPLocalSimulatorFork, Register} from "@chainlink/local/src/ccip/CCIPLocalSimulatorFork.sol";
 
-import { Token } from "../src/Token.sol";
-import { Vault } from "../src/Vault.sol";
-import { IToken } from "../src/interfaces/IToken.sol";
-import { CustomTokenPool } from "../src/CustomTokenPool.sol";
-
-
+import {Token} from "../src/Token.sol";
+import {Vault} from "../src/Vault.sol";
+import {IToken} from "../src/interfaces/IToken.sol";
+import {CustomTokenPool} from "../src/CustomTokenPool.sol";
 
 /**
- * @notice Test cross-chain (Chainlink CCIP) functionality
- * @dev Set up local chainlink CCIP simulator via “CCIPLocalSimulatorFork”, …
+ *	@notice Test cross-chain (Chainlink CCIP) functionality
+ *	@dev Set up local chainlink CCIP simulator via “CCIPLocalSimulatorFork”, …
  */
 contract TestCrossChain is Test {
-
 	// Users and balances
 	address public OWNER = makeAddr("OWNER");
 	uint256 public OWNER_INITIAL_BALANCE = 100 ether;
@@ -100,9 +94,8 @@ contract TestCrossChain is Test {
 
 	CCIPLocalSimulatorFork public ccipLocalSimulatorFork;
 
-
 	/**
-	 * @notice Do set up, deploy all chainlink-local stuff
+	 *	@notice Do set up, deploy all chainlink-local stuff
 	 */
 	function setUp() public {
 		// Create Forks
@@ -120,7 +113,6 @@ contract TestCrossChain is Test {
 		vm.selectFork(BASE_SEPOLIA_FORK);
 		baseSepoliaNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
 
-
 		// — Sepolia Deployment —
 
 		// Fund Owner and Users for Sepolia
@@ -134,27 +126,36 @@ contract TestCrossChain is Test {
 		// Deploy Token, Vault, Pool for Sepolia
 		vm.selectFork(SEPOLIA_FORK);
 		vm.startPrank(OWNER);
-			// Deploy Token and Vault
-			sepoliaToken = new Token();
-			sepoliaVault = new Vault(IToken(address(sepoliaToken)));
-			// Grant a Role for Vault
-			sepoliaToken.grantMintAndBurnRole(address(sepoliaVault));
-			// Fund the Vault with Ether
-			payable(address(sepoliaVault)).call{value: VAULT_INITIAL_BALANCE}("");
-			// Deploy Custom Token Pool
-			sepoliaCustomTokenPool = new CustomTokenPool(IERC20(address(sepoliaToken)), new address[](0), sepoliaNetworkDetails.rmnProxyAddress, sepoliaNetworkDetails.routerAddress);
-			console.log("Deployed a Sepolia Custom Token Pool at", address(sepoliaCustomTokenPool));
-			// Grant a Role for Custom Token Pool
-			sepoliaToken.grantMintAndBurnRole(address(sepoliaCustomTokenPool));
-			// Register Admin Role
-			RegistryModuleOwnerCustom(sepoliaNetworkDetails.registryModuleOwnerCustomAddress).registerAdminViaOwner(address(sepoliaToken));
-			// Accept Admin Role
-			TokenAdminRegistry(sepoliaNetworkDetails.tokenAdminRegistryAddress).acceptAdminRole(address(sepoliaToken));
-			// Set Pool for Token
-			TokenAdminRegistry(sepoliaNetworkDetails.tokenAdminRegistryAddress).setPool(address(sepoliaToken), address(sepoliaCustomTokenPool));
-			console.log("Set a Sepolia Custom Token Pool from TokenAdminRegistry at", TokenAdminRegistry(sepoliaNetworkDetails.tokenAdminRegistryAddress).getPool(address(sepoliaToken)));
+		// Deploy Token and Vault
+		sepoliaToken = new Token();
+		sepoliaVault = new Vault(IToken(address(sepoliaToken)));
+		// Grant a Role for Vault
+		sepoliaToken.grantMintAndBurnRole(address(sepoliaVault));
+		// Fund the Vault with Ether
+		payable(address(sepoliaVault)).call{value: VAULT_INITIAL_BALANCE}("");
+		// Deploy Custom Token Pool
+		sepoliaCustomTokenPool = new CustomTokenPool(
+			IERC20(address(sepoliaToken)),
+			new address[](0),
+			sepoliaNetworkDetails.rmnProxyAddress,
+			sepoliaNetworkDetails.routerAddress
+		);
+		console.log("Deployed a Sepolia Custom Token Pool at", address(sepoliaCustomTokenPool));
+		// Grant a Role for Custom Token Pool
+		sepoliaToken.grantMintAndBurnRole(address(sepoliaCustomTokenPool));
+		// Register Admin Role
+		RegistryModuleOwnerCustom(sepoliaNetworkDetails.registryModuleOwnerCustomAddress)
+			.registerAdminViaOwner(address(sepoliaToken));
+		// Accept Admin Role
+		TokenAdminRegistry(sepoliaNetworkDetails.tokenAdminRegistryAddress).acceptAdminRole(address(sepoliaToken));
+		// Set Pool for Token
+		TokenAdminRegistry(sepoliaNetworkDetails.tokenAdminRegistryAddress)
+			.setPool(address(sepoliaToken), address(sepoliaCustomTokenPool));
+		console.log(
+			"Set a Sepolia Custom Token Pool from TokenAdminRegistry at",
+			TokenAdminRegistry(sepoliaNetworkDetails.tokenAdminRegistryAddress).getPool(address(sepoliaToken))
+		);
 		vm.stopPrank();
-
 
 		// — Base Sepolia Deployment —
 
@@ -169,28 +170,43 @@ contract TestCrossChain is Test {
 		// Deploy Token, Pool Base Sepolia
 		vm.selectFork(BASE_SEPOLIA_FORK);
 		vm.startPrank(OWNER);
-			// Deploy Token
-			baseSepoliaToken = new Token();
-			// Deploy Custom Token Pool
-			baseSepoliaCustomTokenPool = new CustomTokenPool(IERC20(address(baseSepoliaToken)), new address[](0), baseSepoliaNetworkDetails.rmnProxyAddress, baseSepoliaNetworkDetails.routerAddress);
-			console.log("Deployed a Base Sepolia Custom Token Pool at", address(baseSepoliaCustomTokenPool));
-			// Grant a Role for Custom Token Pool
-			baseSepoliaToken.grantMintAndBurnRole(address(baseSepoliaCustomTokenPool));
-			// Register Admin Role
-			RegistryModuleOwnerCustom(baseSepoliaNetworkDetails.registryModuleOwnerCustomAddress).registerAdminViaOwner(address(baseSepoliaToken));
-			// Accept Admin Role
-			TokenAdminRegistry(baseSepoliaNetworkDetails.tokenAdminRegistryAddress).acceptAdminRole(address(baseSepoliaToken));
-			// Set Pool for Token
-			TokenAdminRegistry(baseSepoliaNetworkDetails.tokenAdminRegistryAddress).setPool(address(baseSepoliaToken), address(baseSepoliaCustomTokenPool));
-			console.log("Set a Base Sepolia Custom Token Pool from TokenAdminRegistry at", TokenAdminRegistry(baseSepoliaNetworkDetails.tokenAdminRegistryAddress).getPool(address(baseSepoliaToken)));
+		// Deploy Token
+		baseSepoliaToken = new Token();
+		// Deploy Custom Token Pool
+		baseSepoliaCustomTokenPool = new CustomTokenPool(
+			IERC20(address(baseSepoliaToken)),
+			new address[](0),
+			baseSepoliaNetworkDetails.rmnProxyAddress,
+			baseSepoliaNetworkDetails.routerAddress
+		);
+		console.log("Deployed a Base Sepolia Custom Token Pool at", address(baseSepoliaCustomTokenPool));
+		// Grant a Role for Custom Token Pool
+		baseSepoliaToken.grantMintAndBurnRole(address(baseSepoliaCustomTokenPool));
+		// Register Admin Role
+		RegistryModuleOwnerCustom(baseSepoliaNetworkDetails.registryModuleOwnerCustomAddress)
+			.registerAdminViaOwner(address(baseSepoliaToken));
+		// Accept Admin Role
+		TokenAdminRegistry(baseSepoliaNetworkDetails.tokenAdminRegistryAddress).acceptAdminRole(address(baseSepoliaToken));
+		// Set Pool for Token
+		TokenAdminRegistry(baseSepoliaNetworkDetails.tokenAdminRegistryAddress)
+			.setPool(address(baseSepoliaToken), address(baseSepoliaCustomTokenPool));
+		console.log(
+			"Set a Base Sepolia Custom Token Pool from TokenAdminRegistry at",
+			TokenAdminRegistry(baseSepoliaNetworkDetails.tokenAdminRegistryAddress).getPool(address(baseSepoliaToken))
+		);
 		vm.stopPrank();
 	}
 
-
 	/**
-	 * @notice Configure Custom Token Pool
+	 *	@notice Configure Custom Token Pool
 	 */
-	function configureTokenPool(uint256 fork, address localPool, address remotePool, address remoteToken, uint64 remoteChainSelector) public {
+	function configureTokenPool(
+		uint256 fork,
+		address localPool,
+		address remotePool,
+		address remoteToken,
+		uint64 remoteChainSelector
+	) public {
 		vm.selectFork(fork);
 
 		bytes[] memory remotePoolAddresses = new bytes[](1);
@@ -201,38 +217,34 @@ contract TestCrossChain is Test {
 			remoteChainSelector: remoteChainSelector,
 			remotePoolAddresses: remotePoolAddresses,
 			remoteTokenAddress: abi.encode(address(remoteToken)),
-			outboundRateLimiterConfig: RateLimiter.Config({
-				isEnabled: false,
-				capacity: 0,
-				rate: 0
-			}),
-			inboundRateLimiterConfig: RateLimiter.Config({
-				isEnabled: false,
-				capacity: 0,
-				rate: 0
-			})
+			outboundRateLimiterConfig: RateLimiter.Config({isEnabled: false, capacity: 0, rate: 0}),
+			inboundRateLimiterConfig: RateLimiter.Config({isEnabled: false, capacity: 0, rate: 0})
 		});
 
 		vm.startPrank(OWNER);
-			TokenPool(localPool).applyChainUpdates(new uint64[](0), chainsToAdd);
-			console.log("Configure Custom Token Pool for Fork:", fork);
-			console.log("With localPool:", localPool);
-			console.log("With remotePool:", remotePool);
-			console.log("With remoteToken:", remoteToken);
+		TokenPool(localPool).applyChainUpdates(new uint64[](0), chainsToAdd);
+		console.log("Configure Custom Token Pool for Fork:", fork);
+		console.log("With localPool:", localPool);
+		console.log("With remotePool:", remotePool);
+		console.log("With remoteToken:", remoteToken);
 		vm.stopPrank();
 	}
 
-
 	/**
-	 * @notice Bridge tokens
+	 *	@notice Bridge tokens
 	 */
-	function bridgeTokens(uint256 amount, uint256 localFork, uint256 remoteFork, Register.NetworkDetails memory localNetworkDetails, Register.NetworkDetails memory remoteNetworkDetails, Token localToken, Token remoteToken) public {
+	function bridgeTokens(
+		uint256 amount,
+		uint256 localFork,
+		uint256 remoteFork,
+		Register.NetworkDetails memory localNetworkDetails,
+		Register.NetworkDetails memory remoteNetworkDetails,
+		Token localToken,
+		Token remoteToken
+	) public {
 		// Generate amounts struct
 		Client.EVMTokenAmount[] memory tokenAmounts = new Client.EVMTokenAmount[](1);
-		tokenAmounts[0] = Client.EVMTokenAmount({
-			token: address(localToken),
-			amount: amount
-		});
+		tokenAmounts[0] = Client.EVMTokenAmount({token: address(localToken), amount: amount});
 
 		// Generate message struct
 		Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
@@ -241,11 +253,11 @@ contract TestCrossChain is Test {
 			tokenAmounts: tokenAmounts,
 			feeToken: localNetworkDetails.linkAddress,
 			extraArgs: Client._argsToBytes(
-        Client.GenericExtraArgsV2({
-          gasLimit: 500000, // Gas limit for the callback on the destination chain
-          allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages from the same sender
-        })
-      )
+				Client.GenericExtraArgsV2({
+					gasLimit: 500000, // Gas limit for the callback on the destination chain
+					allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages from the same sender
+				})
+			)
 		});
 
 		// Calculate and approve fees
@@ -259,31 +271,47 @@ contract TestCrossChain is Test {
 		console.log("With amounts:", amount);
 	}
 
-
 	/**
-	 * @notice Test tokens bridging
+	 *	@notice Test tokens bridging
 	 */
 	function testBridgeTokens(uint256 amount) public {
-
-
 		// — Configure pools —
 
 		vm.selectFork(SEPOLIA_FORK);
-		configureTokenPool(SEPOLIA_FORK, address(sepoliaCustomTokenPool), address(baseSepoliaCustomTokenPool), address(baseSepoliaToken), baseSepoliaNetworkDetails.chainSelector);
+		configureTokenPool(
+			SEPOLIA_FORK,
+			address(sepoliaCustomTokenPool),
+			address(baseSepoliaCustomTokenPool),
+			address(baseSepoliaToken),
+			baseSepoliaNetworkDetails.chainSelector
+		);
 		vm.selectFork(BASE_SEPOLIA_FORK);
-		configureTokenPool(BASE_SEPOLIA_FORK, address(baseSepoliaCustomTokenPool), address(sepoliaCustomTokenPool), address(sepoliaToken), sepoliaNetworkDetails.chainSelector);
-
+		configureTokenPool(
+			BASE_SEPOLIA_FORK,
+			address(baseSepoliaCustomTokenPool),
+			address(sepoliaCustomTokenPool),
+			address(sepoliaToken),
+			sepoliaNetworkDetails.chainSelector
+		);
 
 		// — Testing —
 
 		vm.selectFork(SEPOLIA_FORK);
 		uint256 boundedAmount = bound(amount, 1 gwei, 1 ether);
 		console.log("Bounded amount is:", boundedAmount);
-		
+
 		vm.startPrank(USER_1);
-			sepoliaVault.deposit{value: boundedAmount}();
-			bridgeTokens(boundedAmount, SEPOLIA_FORK, BASE_SEPOLIA_FORK, sepoliaNetworkDetails, baseSepoliaNetworkDetails, sepoliaToken, baseSepoliaToken);
-			console.log("Tokens Bridged with amount:", boundedAmount);
+		sepoliaVault.deposit{value: boundedAmount}();
+		bridgeTokens(
+			boundedAmount,
+			SEPOLIA_FORK,
+			BASE_SEPOLIA_FORK,
+			sepoliaNetworkDetails,
+			baseSepoliaNetworkDetails,
+			sepoliaToken,
+			baseSepoliaToken
+		);
+		console.log("Tokens Bridged with amount:", boundedAmount);
 		vm.stopPrank();
 
 		vm.warp(block.timestamp + 1 hours);
@@ -293,7 +321,7 @@ contract TestCrossChain is Test {
 		assertEq(localBalanceAfter, 0);
 
 		ccipLocalSimulatorFork.switchChainAndRouteMessage(BASE_SEPOLIA_FORK);
-		
+
 		vm.selectFork(BASE_SEPOLIA_FORK);
 		uint256 remoteBalanceAfter = baseSepoliaToken.balanceOf(USER_1);
 		console.log("Remote balance after Bridging:", remoteBalanceAfter);

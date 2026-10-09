@@ -1,7 +1,4 @@
-
-
-
-/* 
+/*
 Layout of Smart-Contract:
 1. Version
 2. Imports
@@ -14,7 +11,7 @@ Layout of Smart-Contract:
 9. Funcitons
 */
 
-/* 
+/*
 Layout of functions:
 1. Constructor
 2. Recive Function
@@ -24,23 +21,19 @@ Layout of functions:
 6. View, Pure
 */
 
-
-
-// SPDX-License-Identifier: MIT  
+// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.24;
 
-import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { AccessControl } from "@openzeppelin/contracts/access/AccessControl.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
-import { Token } from "./Token.sol";
-import { IToken } from "./interfaces/IToken.sol";
-
-
+import {Token} from "./Token.sol";
+import {IToken} from "./interfaces/IToken.sol";
 
 /**
- * @notice Vault that takes deposits and rule Token mint and burn
+ *	@notice Vault that takes deposits and rule Token mint and burn
  */
 contract Vault {
 	error Vault__TranferFailed();
@@ -52,7 +45,7 @@ contract Vault {
 	constructor(IToken _token) {
 		i_token = _token;
 	}
-	
+
 	receive() external payable {}
 
 	function deposit() external payable {
@@ -66,10 +59,9 @@ contract Vault {
 			_amount = i_token.balanceOf(msg.sender);
 		}
 		i_token.burn(msg.sender, _amount);
-		(bool success, ) = payable(msg.sender).call{value: _amount}("");
+		(bool success,) = payable(msg.sender).call{value: _amount}("");
 		if (!success) {
 			revert Vault__TranferFailed();
 		}
 	}
-
 }
